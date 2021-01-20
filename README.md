@@ -1,4 +1,4 @@
-### Add this for letter at `model.go`
+### Add this for later for future `user_role` (many to many relationship) at `model.go`
 
 ```go
 // InputRole model
