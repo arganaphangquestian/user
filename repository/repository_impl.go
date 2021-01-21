@@ -58,6 +58,17 @@ func (r *postgres) Users() ([]*model.User, error) {
 	return users, nil
 }
 
+// Users methods
+func (r *postgres) Login(login model.Login) (*model.User, error) {
+	var u model.User
+	err := r.db.QueryRow(context.Background(), `SELECT id, name, username, email, referral, role FROM users where username=$1 AND password=$2`, login.Username, login.Password).Scan(&u.ID, &u.Name, &u.Username, &u.Email, &u.Referral, &u.Role)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return &u, nil
+}
+
 // New UserRepository
 func New() UserRepository {
 	conn, err := pgx.Connect(context.Background(), "postgres://argadev:123456@127.0.0.1:5432/userdatabase?sslmode=disable")

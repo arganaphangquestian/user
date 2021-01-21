@@ -9,6 +9,12 @@ type InputUser struct {
 	Referral *string `json:"referral"`
 }
 
+// Login model
+type Login struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // User model
 type User struct {
 	ID       uint64  `json:"id"`
