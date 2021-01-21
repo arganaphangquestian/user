@@ -88,7 +88,6 @@ func createToken(user model.User) (string, error) {
 }
 
 func (r *userRepository) dashboard(c *fiber.Ctx) error {
-
 	authorizationHeader := c.Get("Authorization")
 	if !strings.Contains(authorizationHeader, "Bearer") {
 		return c.Status(403).JSON(&fiber.Map{
@@ -97,22 +96,37 @@ func (r *userRepository) dashboard(c *fiber.Ctx) error {
 		})
 	}
 	user, err := extractToken(authorizationHeader)
+	if err != nil {
+		return c.Status(500).JSON(&fiber.Map{
+			"success": false,
+			"message": err,
+		})
+	}
+	return c.Status(201).JSON(&fiber.Map{
+		"success": true,
+		"message": "DASHBOARD",
+		"data":    user,
+	})
 }
 
-func extractToken(authorizationHeader string) (*model.User, error) {
+func extractToken(authorizationHeader string) (interface{}, error) {
+	claims := jwt.MapClaims{}
 	tokenString := strings.Replace(authorizationHeader, "Bearer ", "", -1)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Signing method invalid")
 		} else if method != jwt.SigningMethodHS256 {
 			return nil, fmt.Errorf("Signing method invalid")
 		}
-
 		return []byte("MY_SUPER_SECRET_KEY"), nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error : %s", err)
 	}
+	if !token.Valid {
+		return nil, fmt.Errorf("Token not valid")
+	}
+	return claims["user"], nil
 }
 
 // New Route
